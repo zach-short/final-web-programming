@@ -41,8 +41,6 @@ func main() {
 
 	config.ConnectDB()
 
-	SetupRoutes(r)
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
