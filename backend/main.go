@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/zach-short/final-web-programming/config"
+	"github.com/zach-short/final-web-programming/routes"
 )
 
 func main() {
@@ -40,6 +41,8 @@ func main() {
 	})
 
 	config.ConnectDB()
+
+	routes.SetupRoutes(r)
 
 	port := os.Getenv("PORT")
 	if port == "" {

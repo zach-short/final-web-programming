@@ -3,10 +3,10 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Address struct {
-	Street string `bson:"street" json:"street"`
-	City   string `bson:"city" json:"city"`
-	State  string `bson:"state" json:"state"`
-	Zip    string `bson:"zip" json:"zip"`
+	Street string `bson:"street,omitempty" json:"street,omitempty"`
+	City   string `bson:"city,omitempty" json:"city,omitempty"`
+	State  string `bson:"state,omitempty" json:"state,omitempty"`
+	Zip    string `bson:"zip,omitempty" json:"zip,omitempty"`
 }
 
 type User struct {
@@ -19,5 +19,5 @@ type User struct {
 	Bio          string             `bson:"bio,omitempty" json:"bio,omitempty"`
 	Picture      string             `bson:"picture,omitempty" json:"picture,omitempty"`
 	PhoneNumber  string             `bson:"phone_number,omitempty" json:"phone_number,omitempty"`
-	Address      Address            `bson:"address" json:"address"`
+	Address      Address            `bson:"address,omitempty" json:"address,omitempty"`
 }
