@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/components/shared/layout/theme-provider';
 import './globals.css';
 import { ReactNode } from 'react';
 import { SessionProvider } from 'next-auth/react';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
   title: 'Ceros',
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           >
             <SessionProvider>{children}</SessionProvider>
           </ThemeProvider>
+          <Toaster />
         </body>
       </html>
     </>

@@ -121,7 +121,7 @@ export const authApi = {
     api.post<{ token: string; user: User }>('/auth/register', data),
 
   checkEmail: (email: string) =>
-    api.post<{ exists: boolean }>('/auth/check-email', { email }),
+    api.post<{ exists: boolean; hasPassword: boolean }>('/auth/check-email', { email }),
 
   socialAuth: (data: {
     provider: string;
