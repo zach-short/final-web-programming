@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { authApi } from './api';
 
@@ -8,6 +9,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GoogleProvider({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    GitHubProvider({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -40,10 +45,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      if (account?.provider === 'google' && user) {
+      if ((account?.provider === 'google' || account?.provider === 'github') && user) {
         try {
           const { user: userData, token: apiToken } = await authApi.socialAuth({
-            provider: 'google',
+            provider: account.provider,
             providerId: account.providerAccountId!,
             email: user.email!,
             name: user.name || undefined,
@@ -77,5 +82,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 3 * 30 * 24 * 60 * 60, // 90 days
+  },
+  jwt: {
+    maxAge: 3 * 30 * 24 * 60 * 60, // 30 days
   },
 });
