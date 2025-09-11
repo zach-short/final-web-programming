@@ -88,24 +88,16 @@ export function UnifiedAuthForm({
       });
 
       if (result?.error) {
-        // Check if user exists first
         try {
-          const { exists } = await authApi.checkEmail(email);
-          if (exists) {
-            // User exists but login failed - check if it's an OAuth user
-            try {
-              await authApi.register({ email, password });
-              // If register succeeds, it means user existed but had no password (OAuth user)
-              toast.error('This email is registered with Google/GitHub. Please use social login instead.');
-            } catch (registerError: any) {
-              if (registerError?.response?.status === 409) {
-                toast.error('Incorrect password. Please try again.');
-              } else {
-                toast.error('Failed to create account. Please try again.');
-              }
-            }
+          const { exists, hasPassword } = await authApi.checkEmail(email);
+
+          if (exists && !hasPassword) {
+            toast.error(
+              'This email is registered with Google/GitHub. Please use social login instead.',
+            );
+          } else if (exists && hasPassword) {
+            toast.error('Incorrect password. Please try again.');
           } else {
-            // User doesn't exist, create new account
             try {
               await authApi.register({ email, password });
               toast.success('Account created successfully!');
