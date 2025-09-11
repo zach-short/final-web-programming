@@ -17,6 +17,14 @@ import (
 
 var DB *mongo.Client
 
+func GetCollection(collectionName string) *mongo.Collection {
+	databaseName := os.Getenv("DATABASE_NAME")
+	if databaseName == "" {
+		databaseName = "your-app-db" // fallback
+	}
+	return DB.Database(databaseName).Collection(collectionName)
+}
+
 func loadEnvFile() error {
 	_, filename, _, _ := runtime.Caller(0)
 	currentDir := filepath.Dir(filename)
