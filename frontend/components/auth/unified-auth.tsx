@@ -106,7 +106,7 @@ export function UnifiedAuthForm({
                 password,
                 callbackUrl: '/dashboard',
               });
-            } catch (registerError: any) {
+            } catch (registerError) {
               console.error('Registration error:', registerError);
               toast.error('Failed to create account. Please try again.');
             }
