@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,8 +13,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GalleryVerticalEnd, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { authApi } from '@/lib/api';
+import Image from 'next/image';
 
 type AuthStep = 'providers' | 'email' | 'password';
 
@@ -30,7 +31,7 @@ export function UnifiedAuthForm({
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSocialAuth = async (provider: 'google') => {
+  const handleSocialAuth = async (provider: 'google' | 'github') => {
     setIsLoading(true);
     try {
       await signIn(provider, {
@@ -134,11 +135,27 @@ export function UnifiedAuthForm({
                   </svg>
                   Continue with Google
                 </Button>
+                <Button
+                  variant='outline'
+                  className='w-full'
+                  onClick={() => handleSocialAuth('github')}
+                  disabled={isLoading}
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 24 24'
+                    className='size-4'
+                  >
+                    <path
+                      d='M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z'
+                      fill='currentColor'
+                    />
+                  </svg>
+                  Continue with GitHub
+                </Button>
               </div>
               <div className='relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
-                <span className='relative z-10 bg-background px-2 text-muted-foreground'>
-                  or
-                </span>
+                <span className='relative z-10 text-muted-foreground'>or</span>
               </div>
               <Button
                 variant='outline'
@@ -230,16 +247,33 @@ export function UnifiedAuthForm({
 }
 
 export default function UnifiedAuth() {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <div className='flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10'>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (session) {
+    window.location.href = '/dashboard';
+    return null;
+  }
+
   return (
     <div className='flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10'>
       <div className='flex w-full max-w-sm flex-col gap-6'>
         <a href='#' className='flex items-center gap-2 self-center font-medium'>
-          <img 
-            src='/images/logo.png' 
-            alt='RONR Logo' 
+          <Image
+            src='/images/logo.png'
+            alt='RONR Logo'
             className='h-6 w-6 rounded-md object-contain'
+            height={50}
+            width={50}
           />
-          RONR
+          CEROS
         </a>
         <UnifiedAuthForm />
       </div>

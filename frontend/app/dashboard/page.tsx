@@ -1,13 +1,15 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { AuthGate, AdminOnly, MemberOnly } from '@/components/auth/auth-gate';
 
 export default function DashboardPage() {
+  const session = useSession();
   return (
     <AuthGate>
       <div className='p-6 space-y-4'>
         <h1 className='text-2xl font-bold'>Dashboard</h1>
+        <p>Hello {session.data?.user?.name || session.data?.user?.email}</p>
 
         <div className='p-4  rounded'>
           <h2 className='text-lg font-semibold'>User Content</h2>
