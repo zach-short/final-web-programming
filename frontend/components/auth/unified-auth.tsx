@@ -59,7 +59,7 @@ export function UnifiedAuthForm({
 
     setIsLoading(true);
     try {
-      const { exists } = await authApi.checkEmail(email);
+      /* const { exists } = await authApi.checkEmail(email); */
       setStep('password');
     } catch (error) {
       console.error('Email check error:', error);
