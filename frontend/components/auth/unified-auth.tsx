@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +17,8 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import Image from 'next/image';
+import CenteredDiv from '../shared/layout/centered-div';
+import DefaultLoader from '../shared/layout/loader';
 
 type AuthStep = 'providers' | 'email' | 'password';
 
@@ -34,11 +37,18 @@ export function UnifiedAuthForm({
   const handleSocialAuth = async (provider: 'google' | 'github') => {
     setIsLoading(true);
     try {
-      await signIn(provider, {
+      const result = await signIn(provider, {
         callbackUrl: '/dashboard',
+        redirect: false,
       });
+
+      if (result?.error) {
+        toast.error(`Failed to sign in with ${provider}. Please try again.`);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error('Social auth error:', error);
+      toast.error(`Failed to sign in with ${provider}. Please try again.`);
       setIsLoading(false);
     }
   };
@@ -49,7 +59,7 @@ export function UnifiedAuthForm({
 
     setIsLoading(true);
     try {
-      const { exists } = await authApi.checkEmail(email);
+      /* const { exists } = await authApi.checkEmail(email); */
       setStep('password');
     } catch (error) {
       console.error('Email check error:', error);
@@ -64,6 +74,11 @@ export function UnifiedAuthForm({
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const password = formData.get('password') as string;
 
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const result = await signIn('credentials', {
@@ -74,20 +89,38 @@ export function UnifiedAuthForm({
 
       if (result?.error) {
         try {
-          await authApi.register({ email, password });
-          await signIn('credentials', {
-            email,
-            password,
-            callbackUrl: '/dashboard',
-          });
-        } catch (registerError) {
-          console.error('Registration error:', registerError);
+          const { exists, hasPassword } = await authApi.checkEmail(email);
+
+          if (exists && !hasPassword) {
+            toast.error(
+              'This email is registered with Google/GitHub. Please use social login instead.',
+            );
+          } else if (exists && hasPassword) {
+            toast.error('Incorrect password. Please try again.');
+          } else {
+            try {
+              await authApi.register({ email, password });
+              toast.success('Account created successfully!');
+              await signIn('credentials', {
+                email,
+                password,
+                callbackUrl: '/dashboard',
+              });
+            } catch (registerError) {
+              console.error('Registration error:', registerError);
+              toast.error('Failed to create account. Please try again.');
+            }
+          }
+        } catch (emailCheckError) {
+          console.error('Email check error:', emailCheckError);
+          toast.error('An error occurred. Please try again.');
         }
       } else {
         window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Auth error:', error);
+      toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -212,8 +245,12 @@ export function UnifiedAuthForm({
                   name='password'
                   type='password'
                   required
+                  minLength={6}
                   autoFocus
                 />
+                <p className='text-xs text-muted-foreground'>
+                  Password must be at least 6 characters
+                </p>
               </div>
               <div className='flex gap-2'>
                 <Button
@@ -251,9 +288,9 @@ export default function UnifiedAuth() {
 
   if (status === 'loading') {
     return (
-      <div className='flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10'>
-        <div>Loading...</div>
-      </div>
+      <CenteredDiv>
+        <DefaultLoader />
+      </CenteredDiv>
     );
   }
 
