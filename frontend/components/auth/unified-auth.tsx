@@ -5,6 +5,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { AxiosError } from 'axios';
 import {
   Card,
   CardContent,
@@ -106,9 +107,14 @@ export function UnifiedAuthForm({
                 password,
                 callbackUrl: '/dashboard',
               });
-            } catch (registerError) {
+            } catch (registerError: unknown) {
               console.error('Registration error:', registerError);
-              toast.error('Failed to create account. Please try again.');
+              if (registerError instanceof AxiosError) {
+                const message = registerError.response?.data?.message || 'Failed to create account. Please try again.';
+                toast.error(message);
+              } else {
+                toast.error('Failed to create account. Please try again.');
+              }
             }
           }
         } catch (emailCheckError) {
